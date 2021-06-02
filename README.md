@@ -1,31 +1,107 @@
-[![码云Gitee](https://gitee.com/binary/weixin-java-cp-demo/badge/star.svg?theme=blue)](https://gitee.com/binary/weixin-java-cp-demo)
-[![Github](http://github-svg-buttons.herokuapp.com/star.svg?user=binarywang&repo=weixin-java-cp-demo&style=flat&background=1081C1)](https://github.com/binarywang/weixin-java-cp-demo)
-[![Build Status](https://travis-ci.org/binarywang/weixin-java-cp-demo.svg?branch=master)](https://travis-ci.org/binarywang/weixin-java-cp-demo)
------------------------
+[TOC]
 
-### 本项目为 `WxJava` 的 Demo 演示程序，基于 `Spring Boot` 构建，实现企业微信后端开发功能。
-更多信息请查阅：https://github.com/Wechat-Group/WxJava
+# 企业微信 网页授权登入demo
 
-## 使用步骤：
-1. 请注意，本demo为简化代码编译时加入了 `lombok` 支持，如果不了解 `lombok` 的话，请先学习下相关知识，比如可以阅读[此文章](https://mp.weixin.qq.com/s/cUc-bUcprycADfNepnSwZQ)；
-1. 另外，新手遇到问题，请务必先阅读[【开发文档 Wiki 首页】](https://github.com/Wechat-Group/WxJava/wiki)的常见问题部分，可以少走很多弯路，节省不少时间。
-1. 配置：复制 `/src/main/resources/application.yml.template` 或者修改其扩展名生成 `application.yml` 文件，根据自己需要填写相关配置（需要注意的是：yml文件内的属性冒号后面的文字之前需要加空格，可参考已有配置，否则属性会设置不成功）；
-2. 主要配置说明如下：（ 注意：如果是要配置通讯录同步的应用，`agentId` 可以随便配置一个，保证跟下面服务器URL地址里的一致即可。）
-```
+### 企业微信网页授权登入
+
+#### 1：工具包
+
+[com.github.binarywang](https://github.com/Wechat-Group/WxJava)
+
+#### 2：企业微信 网页授权登入
+
+####   2.1：操作流程
+
+1. 创建自建应用
+2. 设置可信域名
+3. 设置应用台主页
+
+####   2.2：resources文件夹中的application.yml配置文件
+
+```yml
+logging:
+  level:
+    org.springframework.web: INFO
+    com.github.binarywang.demo.wx.cp: DEBUG
+    me.chanjar.weixin: DEBUG
 wechat:
   cp:
-    corpId: 111 （企业ID 在此页面查看：https://work.weixin.qq.com/wework_admin/frame#profile）
+    corpId: ww2bd1ee4b49ae4a6b
     appConfigs:
-      - agentId: 1000001 （某一具体应用的AgentId，如果是要配置通讯录同步的应用，可以随便配置一个）
-        secret: 1111（该应用的Secret）
-        token: 111 （应用中的 “接受消息” 部分的 “接收消息服务器配置” 里的Token值）
-        aesKey: 111 （应用中的 “接受消息” 部分的 “接收消息服务器配置” 里的EncodingAESKey值）
-      - agentId: 1000002 （另一个应用，以下同上）
-        secret: 1111
-        token: 111
-        aesKey: 111
+      - agentId: 1000002
+        secret: g7jrp99jdAfRlzaV-49mnhusnN4fzqyy2Bbgf88CSYs
+        token:
+        aesKey:
+        redirectUri: http://fcdb2z.natappfree.cc/mobile/qyweixin/oauth
 ```
-3. 运行Java程序：`WxCpDemoApplication`；
-4. 配置企业微信对应应用中的 `接受消息` 部分的 `接收消息服务器配置` URL地址：`http://{可外网访问的域名}/wx/cp/portal/{xxxxx}` （`xxxx` 要跟 `AgentId` 保持一致，注意 `my-domain` 要跟上面的一致，需要符合微信官方的要求）；
-6. 根据自己需要修改各个 `handler` 的实现，加入自己的业务逻辑。
-	
+
+corpId：企业ID，agentId：应用ID，secret：应用标识，redirectUri：回调地址。如果只是实现网页授权登陆token，aesKey无需填写。
+
+####   2.3：WxOauthController
+
+```java
+@Controller
+@Slf4j
+public class WxOauthController {
+    /**
+     * 授权入口
+     * @return
+     * @throws Exception
+     */
+    @GetMapping("/mobile/qyweixin/init")
+    public Object init() throws Exception{
+        // agentId 填写自建应用得id
+        WxCpServiceImpl wxCpService = new WxCpServiceImpl();
+  wxCpService.setWxCpConfigStorage(WxCpConfiguration.getCpService(1000002).getWxCpConfigStorage());
+       
+        //url即回调地址
+        String aNull = wxCpService.getOauth2Service().buildAuthorizationUrl(null);
+        log.info("" + aNull);
+        //注意这边需要重定向转发（这边重定向得地址就是上面的url的地址）
+        return "redirect:" + aNull;
+    }
+
+    /**
+     * 回调地址
+     * @param code
+     * @return
+     * @throws Exception
+     */
+    @GetMapping("/mobile/qyweixin/oauth")
+    @ResponseBody
+    public Object oauth(String code) throws Exception{
+        log.info(code + "code得值");
+        final WxCpService wxCpService = WxCpConfiguration.getCpService(1000002);
+        // 根据code获取 访问用户身份
+        WxCpOauth2UserInfo userInfo = wxCpService.getOauth2Service().getUserInfo(code);
+        log.info(userInfo + "用户信息");
+        // 根据userId获取 访问用户的详细信息
+        WxCpUser user = wxCpService.getUserService().getById(userInfo.getUserId());
+        log.info(user + "用户得详细信息");
+        return code;
+    }
+}
+```
+
+####   2.4：测试
+
+- 百度搜索natapp,进入官网注册登陆
+
+- 点击我的隧道
+
+- 配置我的隧道映射的本地端口
+
+- [查看NATAPP1分钟快速新手图文教程](https://natapp.cn/article/natapp_newbie)
+
+- 启动 natapp 应用得到随机分配的域名，例如：http://fcdb2z.natappfree.cc ，这个就是对应本地的 locaohost:配置的映射端口
+
+- 在步骤二配置好可新域名跟应用台主页，例如：
+
+  > 应用台主页：http://fcdb2z.natappfree.cc/mobile/qyweixin/init
+  >
+  > 可信域名：fcdb2z.natappfree.cc
+
+- 进入工作台点击创建的应用，看后台打印信息，即可知道是否登入成功
+
+> 通过拿到的用户的信息去数据库匹配应用系统用户信息，进行后续操作
+
