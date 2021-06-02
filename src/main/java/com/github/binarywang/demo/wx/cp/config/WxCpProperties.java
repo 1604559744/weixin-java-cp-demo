@@ -45,6 +45,11 @@ public class WxCpProperties {
      */
     private String aesKey;
 
+      /**
+       * 设置企业微信号的 redirectUri
+       */
+      private String redirectUri;
+
   }
 
   @Override

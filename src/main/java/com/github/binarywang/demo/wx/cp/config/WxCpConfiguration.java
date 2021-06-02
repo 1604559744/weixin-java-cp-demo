@@ -77,6 +77,7 @@ public class WxCpConfiguration {
             configStorage.setCorpSecret(a.getSecret());
             configStorage.setToken(a.getToken());
             configStorage.setAesKey(a.getAesKey());
+            configStorage.setOauth2redirectUri(a.getRedirectUri());
             val service = new WxCpServiceImpl();
             service.setWxCpConfigStorage(configStorage);
             routers.put(a.getAgentId(), this.newRouter(service));
