@@ -26,10 +26,10 @@ logging:
     me.chanjar.weixin: DEBUG
 wechat:
   cp:
-    corpId: ww2bd1ee4b49axxxxx
+    corpId: ww2bd1ee4b49ae4a6b
     appConfigs:
       - agentId: 1000002
-        secret: g7jrp99jdAfRlzaV-49mnhusnN4fzqyy2Bbgfxxxxxx
+        secret: g7jrp99jdAfRlzaV-49mnhusnN4fzqyy2Bbgf88CSYs
         token:
         aesKey:
         redirectUri: http://fcdb2z.natappfree.cc/mobile/qyweixin/oauth

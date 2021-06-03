@@ -25,17 +25,13 @@ public class WxOauthController {
      */
     @GetMapping("/mobile/qyweixin/init")
     public Object init() throws Exception{
-        // agentId 填写自建应用得id
         WxCpServiceImpl wxCpService = new WxCpServiceImpl();
+        // agentId 填写自建应用得id
         wxCpService.setWxCpConfigStorage(WxCpConfiguration.getCpService(1000002).getWxCpConfigStorage());
-        // 该链接就是回调地址得链接redirect_uri
-        // 因为是本地测试得原因，该链接需要使用内网穿透工具得到（下面有教怎么使用内网穿透）
-        //String url = "http://fdsfddd.free.idcfengye.com/wx/outh";
-        //url即回调地址
-        String aNull = wxCpService.getOauth2Service().buildAuthorizationUrl(null);
-        log.info("" + aNull);
-        //注意这边需要重定向转发（这边重定向得地址就是上面的url的地址）
-        return "redirect:" + aNull;
+        String redirectUrl = wxCpService.getOauth2Service().buildAuthorizationUrl(null);
+        log.info("" + redirectUrl);
+        //注意这边需要重定向转发（这边重定向得地址就是回调的url的地址）
+        return "redirect:" + redirectUrl;
     }
 
     /**
